@@ -32,13 +32,20 @@ SetPointInfo;
 
 SetPointInfo leftPID, rightPID;
 
-/* PID Parameters */
+/* Default PID Parameters */
 int Kp = 20;
 int Kd = 12;
 int Ki = 0;
 int Ko = 50;
 
 unsigned char moving = 0; // is the base in motion?
+
+void updatePIDParameters(int kp, int kd, int ki, int ko) {
+  Kp = kp;
+  Kd = kd;
+  Ki = ki;
+  Ko = ko;
+}
 
 /*
 * Initialize PID variables to zero to prevent startup spikes

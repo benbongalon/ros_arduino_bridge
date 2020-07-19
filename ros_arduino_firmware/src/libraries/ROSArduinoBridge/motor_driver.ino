@@ -86,6 +86,37 @@
     setMotorSpeed(LEFT, leftSpeed);
     setMotorSpeed(RIGHT, rightSpeed);
   }
+#elif defined PARALLAX_HB25
+  Servo leftServo, rightServo;
+  
+  void initMotorController() {
+    pinMode(LEFT_MOTOR_PWM, OUTPUT);
+    digitalWrite(LEFT_MOTOR_PWM, LOW);               
+    leftServo.attach(LEFT_MOTOR_PWM, 800, 2200);
+    //setMotorSpeed(LEFT, 0);
+
+    pinMode(RIGHT_MOTOR_PWM, OUTPUT);
+    digitalWrite(RIGHT_MOTOR_PWM, LOW);               
+    rightServo.attach(RIGHT_MOTOR_PWM, 800, 2200);
+    //setMotorSpeed(RIGHT, 0);
+  }
+  
+  void setMotorSpeed(int i, int spd) {
+    /* For HB-25, the PID update was modified to return a speed value between -500 to +500. 
+     * This nicely maps to the motor's valid pulse width input range of [1000, 2000].
+     */
+    int pulse_width = (int) constrain(NeutralPulseWidth + spd, FullReversePulseWidth, FullForwardPulseWidth);
+    if (i == LEFT) {
+      leftServo.writeMicroseconds(pulse_width);
+    } else {
+      rightServo.writeMicroseconds(pulse_width);
+    }
+  }
+  
+  void setMotorSpeeds(int leftSpeed, int rightSpeed) {
+    setMotorSpeed(LEFT, leftSpeed);
+    setMotorSpeed(RIGHT, rightSpeed);
+  }
 #else
   #error A motor driver must be selected!
 #endif

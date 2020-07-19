@@ -64,6 +64,12 @@
 
    /* L298 Motor driver*/
    //#define L298_MOTOR_DRIVER
+
+   /* Parallax HB-25 motor and encoders attached to  
+    * Arduino board, preferably via a Sensor Shield v5.0
+    */
+   #define PARALLAX_HB25
+
 #endif
 
 #define USE_SERVOS  // Enable use of PWM servos as defined in servos.h
@@ -73,7 +79,11 @@
 #define BAUDRATE     57600
 
 /* Maximum PWM signal */
+#ifdef PARALLAX_HB25
+#define MAX_PWM        500
+#else
 #define MAX_PWM        255
+#endif
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -103,9 +113,17 @@
   /* PID parameters and functions */
   #include "diff_controller.h"
 
-  /* Run the PID loop at 30 times per second */
-  #define PID_RATE           30     // Hz
-
+  #ifdef PARALLAX_HB25
+    /* Run the PID loop less frequently since the HB-25 encoders only have 
+     * 144 ticks/rev resolution. At higher sampling rates, the tick count 
+     * per frame is so few that the velocity estimate is poor.
+     */
+    #define PID_RATE           10     // Hz
+  #else
+    /* Run the PID loop at 30 times per second */
+    #define PID_RATE           30    // Hz
+  #endif
+  
   /* Convert the rate into an interval */
   const int PID_INTERVAL = 1000 / PID_RATE;
   
@@ -140,7 +158,7 @@ long arg2;
 
 /* Clear the current command parameters */
 void resetCommand() {
-  cmd = NULL;
+  cmd = (char)NULL;
   memset(argv1, 0, sizeof(argv1));
   memset(argv2, 0, sizeof(argv2));
   arg1 = 0;
@@ -157,7 +175,7 @@ int runCommand() {
   int pid_args[4];
   arg1 = atoi(argv1);
   arg2 = atoi(argv2);
-  
+
   switch(cmd) {
   case GET_BAUDRATE:
     Serial.println(BAUDRATE);
@@ -230,6 +248,16 @@ int runCommand() {
     Ko = pid_args[3];
     Serial.println("OK");
     break;
+  case GET_PID:
+    Serial.print("PID params: Kp=");
+    Serial.print(Kp);
+    Serial.print(" Kd=");
+    Serial.print(Kd);
+    Serial.print(" Ki=");
+    Serial.print(Ki);
+    Serial.print(" Ko=");
+    Serial.println(Ko);
+    break;
 #endif
   default:
     Serial.println("Invalid Command");
@@ -240,6 +268,7 @@ int runCommand() {
 /* Setup function--runs once at startup. */
 void setup() {
   Serial.begin(BAUDRATE);
+  //Serial.println("Starting ROS2 Arduino bridge.");
 
 // Initialize the motor controller if used */
 #ifdef USE_BASE
@@ -263,7 +292,23 @@ void setup() {
     
     // enable PCINT1 and PCINT2 interrupt in the general interrupt mask
     PCICR |= (1 << PCIE1) | (1 << PCIE2);
+    
+  #elif defined(PARALLAX_HB25)
+    // Enable interrupts on the pins where the encoders are attached.
+    PCICR |= (1 << PORTB);
+    PCMSK0 |= (1 << PCINT2); // PB2 (Pin 10)
+    PCMSK0 |= (1 << PCINT3); // PB3 (Pin 11)
+    PCMSK0 |= (1 << PCINT4); // PB4 (Pin 12)
+    PCMSK0 |= (1 << PCINT5); // PB5 (Pin 13)
+
+    // Tune the PID for the Parallax Arlo Motor (P/N 28962).
+    const int _Kp = 20,
+              _Kd = 12,
+              _Ki = 0,
+              _Ko = 20; // larger gain so motor quickly reaches target velocity
+    updatePIDParameters(_Kp, _Kd, _Ki, _Ko);
   #endif
+  
   initMotorController();
   resetPID();
 #endif

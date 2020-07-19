@@ -68,6 +68,55 @@
       return;
     }
   }
+#elif defined(PARALLAX_HB25)
+  #define UNDEFINED  -1
+  volatile long left_enc_pos = 0L;
+  volatile long right_enc_pos = 0L;
+  volatile int8_t L_read = UNDEFINED,
+                  L_read_prev = UNDEFINED,
+                  R_read = UNDEFINED,
+                  R_read_prev = UNDEFINED;
+                  
+  ISR(PCINT0_vect){
+    // Gets called when any of the encoder pins toggle
+    
+    static const int8_t ENC_STATES[] = {0,-1,1,2,1,0,2,-1,-1,2,0,1,2,1,-1,0};  // X4-encoding lookup table
+    int dir;
+    
+    L_read = 2*digitalRead(LEFT_ENC_PIN_A) + digitalRead(LEFT_ENC_PIN_B);
+    R_read = 2*digitalRead(RIGHT_ENC_PIN_A) + digitalRead(RIGHT_ENC_PIN_B);
+  
+    // Convert quadrature encoder values to tick counts.
+    // Swap the A and B connectors if the direction value is opposite of what you desire.
+    // https://www.scribd.com/document/235161074/How-to-Use-a-Quadrature-Encoder-Let-s-Make-Robots
+    if (L_read_prev != UNDEFINED) {
+      dir = ENC_STATES[4*L_read_prev + L_read];
+      left_enc_pos += dir;
+    }
+    L_read_prev = L_read;
+    if (R_read_prev != UNDEFINED) {
+      dir = ENC_STATES[4*R_read_prev + R_read];
+      right_enc_pos += dir;
+    }
+    R_read_prev = R_read;    
+  }
+  
+  /* Wrap the encoder reading function */
+  long readEncoder(int i) {
+    if (i == LEFT) return left_enc_pos;
+    else return right_enc_pos;
+  }
+
+  /* Wrap the encoder reset function */
+  void resetEncoder(int i) {
+    if (i == LEFT){
+      left_enc_pos=0L;
+      return;
+    } else { 
+      right_enc_pos=0L;
+      return;
+    }
+  }
 #else
   #error A encoder driver must be selected!
 #endif

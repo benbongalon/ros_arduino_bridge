@@ -1,6 +1,6 @@
 Overview
 --------
-This branch (indigo-devel) is intended for ROS Indigo and above, and uses the Catkin buildsystem. It may also be compatible with ROS Hydro.
+This branch (foxy-devel) is intended for ROS 2 Foxy Fitzroy and above, and uses the Colcon buildsystem. It is not backwards compatible with ROS 1.
 
 This ROS stack includes an Arduino library (called ROSArduinoBridge) and a collection of ROS packages for controlling an Arduino-based robot using standard ROS messages and services.  The stack does **not** depend on ROS Serial.
 
@@ -13,6 +13,7 @@ Features of the stack include:
 * Can control digital outputs (e.g. turn a switch or LED on and off)
 
 * Support for PWM servos
+
 * Configurable base controller if using the required hardware
 
 The stack includes a base controller for a differential drive
@@ -24,11 +25,13 @@ the PC. The base controller requires the use of a motor controller and encoders 
 * Robogaia Mega Encoder shield
 (http://www.robogaia.com/two-axis-encoder-counter-mega-shield-version-2.html) or on-board wheel encoder counters.
 
-**NOTE:** The Robogaia Mega Encoder shield can only be used with an Arduino Mega. The on-board wheel encoder counters are currently only supported by Arduino Uno.
+    **NOTE:** The Robogaia Mega Encoder shield can only be used with an Arduino Mega. The on-board wheel encoder counters are currently only supported by Arduino Uno.
 
 * L298 motor driver
 
-* The library can be easily extended to include support for other motor controllers and encoder hardware or libraries.
+* Parallax HB-25 motor driver
+
+The library can be easily extended to include support for other motor controllers and encoder hardware or libraries.
 
 Official ROS Documentation
 --------------------------
@@ -69,7 +72,7 @@ The Robogaia Mega Encoder library can be found at:
 
 http://www.robogaia.com/uploads/6/8/0/9/6809982/__megaencodercounter-1.3.tar.gz
 
-L298 Motor Driver doesn't require any libraries
+**NOTE:** The L298 Motor Driver and the Parallax HB-25 Motor Driver do not require any libraries
 
 These libraries should be installed in your standard Arduino
 sketchbook/libraries directory.
@@ -113,6 +116,8 @@ and you should see a list of groups you belong to including dialout.
 
 Installation of the ros\_arduino\_bridge Stack
 ----------------------------------------------
+
+**@TODO:** update instructions for Colcon build
 
     $ cd ~/catkin_workspace/src
     $ git clone https://github.com/hbrobotics/ros_arduino_bridge.git
@@ -191,6 +196,7 @@ The list of commands can be found in the file commands.h.  The current list incl
 #define SERVO_WRITE    's'
 #define SERVO_READ     't'
 #define UPDATE_PID     'u'
+#define GET_PID        'v'
 #define DIGITAL_WRITE  'w'
 #define ANALOG_WRITE   'x'
 </pre>

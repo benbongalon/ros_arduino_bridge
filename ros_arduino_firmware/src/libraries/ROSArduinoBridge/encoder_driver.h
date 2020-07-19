@@ -12,6 +12,12 @@
   //below can be changed, but should be PORTC pins
   #define RIGHT_ENC_PIN_A PC4  //pin A4
   #define RIGHT_ENC_PIN_B PC5   //pin A5
+  
+#elif defined(PARALLAX_HB25)
+  #define LEFT_ENC_PIN_A 11
+  #define LEFT_ENC_PIN_B 10
+  #define RIGHT_ENC_PIN_A 13
+  #define RIGHT_ENC_PIN_B 12
 #endif
    
 long readEncoder(int i);
