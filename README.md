@@ -212,7 +212,13 @@ To move the robot forward at 20 encoder ticks per second:
 
 m 20 20
 
-For a details, see the [Firmware Commands Guide](FirmwareCommands.md)
+To update the values of the PID parameters _Kp, Kd, Ki, Ko_ (proportional, derivative, integral and output gains, respectively): 
+
+u 20:12:0:20
+
+To get the current PID parameters:
+
+v
 
 
 Testing your Wiring Connections
