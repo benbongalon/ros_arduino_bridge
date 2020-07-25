@@ -42,11 +42,7 @@ http://www.ros.org/wiki/ros_arduino_bridge
 
 System Requirements
 -------------------
-**Python Serial:** To install the python-serial package under Ubuntu, use the command:
-
-    $ sudo apt-get install python-serial
-
-On non-Ubuntu systems, use either:
+Use either:
 
     $ sudo pip install --upgrade pyserial
 
@@ -114,14 +110,13 @@ When you log back in again, try the command:
 
 and you should see a list of groups you belong to including dialout. 
 
-Installation of the ros\_arduino\_bridge Stack
+Installation of the ros2\_arduino\_bridge stack
 ----------------------------------------------
 
-**@TODO:** update instructions for Colcon build
-
-    $ cd ~/catkin_workspace/src
-    $ git clone https://github.com/hbrobotics/ros_arduino_bridge.git
-    $ cd ~/catkin_workspace
+    $ mkdir -p ~/dev_ws/src
+    $ cd ~/dev_ws/src
+    $ git clone https://github.com/benbongalon/ros_arduino_bridge.git
+    $ 
     $ catkin_make
 
 The provided Arduino library is called ROSArduinoBridge and is
@@ -147,7 +142,7 @@ Loading the ROSArduinoBridge Sketch
 
 * If you are using the base controller, make sure you have already installed the appropriate motor controller and encoder libraries into your Arduino sketchbook/librariesfolder.
 
-* Launch the Arduino 1.0 IDE and load the ROSArduinoBridge sketch.
+* Launch the Arduino IDE and load the ROSArduinoBridge sketch.
   You should be able to find it by going to:
 
     File->Sketchbook->ROSArduinoBridge
@@ -155,9 +150,9 @@ Loading the ROSArduinoBridge Sketch
 NOTE: If you don't have the required base controller hardware but
 still want to try the code, see the notes at the end of the file.
 
-Choose one of the supported motor controllers by uncommenting its #define statement and commenting out any others.  By default, the Pololu VNH5019 driver is chosen.
+Choose one of the supported motor controllers by uncommenting its #define statement and ensure that others are commented out. All controllers are disabled by default.
 
-Choose a supported encoder library by by uncommenting its #define statement and commenting out any others. the Robogaia Mega Encoder shield is chosen by default.
+Choose a supported encoder library by by uncommenting its #define statement and ensure that others are commented out. All encoder libraries are disabled by default.
 
 If you want to control PWM servos attached to your controller, look for the line:
 
@@ -182,7 +177,7 @@ The ROSArduinoLibrary accepts single-letter commands over the serial port for po
 
 **NOTE:** Before trying these commands, set the Serial Monitor baudrate to 57600 and the line terminator to "Carriage return" or "Both NL & CR" using the two pulldown menus on the lower right of the Serial Monitor window.
 
-The list of commands can be found in the file commands.h.  The current list includes:
+The list of commands can be found in the file *commands.h*.  The current list includes:
 
 <pre>
 #define ANALOG_READ    'a'
@@ -216,6 +211,8 @@ e
 To move the robot forward at 20 encoder ticks per second:
 
 m 20 20
+
+For a details, see the [Firmware Commands Guide](FirmwareCommands.md)
 
 
 Testing your Wiring Connections
