@@ -191,9 +191,10 @@ The list of commands can be found in the file *commands.h*.  The current list in
 #define SERVO_WRITE    's'
 #define SERVO_READ     't'
 #define UPDATE_PID     'u'
-#define GET_PID        'v'
+#define GET_PID_PARAMS 'v'
 #define DIGITAL_WRITE  'w'
 #define ANALOG_WRITE   'x'
+#define GET_PID_RATE   'y'
 </pre>
 
 For example, to get the analog reading on pin 3, use the command:

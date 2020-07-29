@@ -9,9 +9,10 @@
     different motor controller or encoder method.
 
     Created for the Pi Robot Project: http://www.pirobot.org
-    and the Home Brew Robotics Club (HBRC): http://hbrobotics.org
+    and the Home Brew Robotics Club (HBRC): http://hbrobotics.org 
+    and the Mio Robot Project https://github.com/benbongalon/mio-robot
     
-    Authors: Patrick Goebel, James Nugen
+    Authors: Patrick Goebel, James Nugen, Ben Bongalon
 
     Inspired and modeled after the ArbotiX driver by Michael Ferguson
     
@@ -68,7 +69,7 @@
    /* Parallax HB-25 motor and encoders attached to  
     * Arduino board, preferably via a Sensor Shield v5.0
     */
-   //#define PARALLAX_HB25
+   #define PARALLAX_HB25
 
 #endif
 
@@ -248,15 +249,17 @@ int runCommand() {
     Ko = pid_args[3];
     Serial.println("OK");
     break;
-  case GET_PID:
-    Serial.print("PID params: Kp=");
+  case GET_PID_PARAMS:
     Serial.print(Kp);
-    Serial.print(" Kd=");
+    Serial.print(" ");
     Serial.print(Kd);
-    Serial.print(" Ki=");
+    Serial.print(" ");
     Serial.print(Ki);
-    Serial.print(" Ko=");
+    Serial.print(" ");
     Serial.println(Ko);
+    break;
+  case GET_PID_RATE:
+    Serial.println(PID_RATE);
     break;
 #endif
   default:

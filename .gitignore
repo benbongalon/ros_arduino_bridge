@@ -104,3 +104,7 @@ ENV/
 # End of https://www.gitignore.io/api/python
 # temporary files
 *~
+
+# ROS temp files and folders
+log/
+install/
