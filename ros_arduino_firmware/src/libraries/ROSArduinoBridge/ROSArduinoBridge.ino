@@ -2,15 +2,15 @@
  *  ROSArduinoBridge
  
     A set of simple serial commands to control a differential drive
-    robot and receive back sensor and odometry data. Default 
-    configuration assumes use of an Arduino Mega + Pololu motor
-    controller shield + Robogaia Mega Encoder shield.  Edit the
-    readEncoder() and setMotorSpeed() wrapper functions if using 
-    different motor controller or encoder method.
+    robot and receive back sensor and odometry data. By default, this  
+    program is configured with all controllers disabled to reduce 
+    conflict. Uncomment the relevant #define lines below to enable 
+    your controller. See the Notes section of the top-level README.md 
+    file if have an unsupported motor controller or encoder.
 
-    Created for the Pi Robot Project: http://www.pirobot.org
-    and the Home Brew Robotics Club (HBRC): http://hbrobotics.org 
-    and the Mio Robot Project https://github.com/benbongalon/mio-robot
+    Originally created for the Pi Robot Project: http://www.pirobot.org
+    and the Home Brew Robotics Club (HBRC): http://hbrobotics.org;
+    Modified for the Mio Robot https://github.com/benbongalon/mio-robot
     
     Authors: Patrick Goebel, James Nugen, Ben Bongalon
 
@@ -18,6 +18,7 @@
     
     Software License Agreement (BSD License)
 
+    Copyright (c) 2020, Ben Bongalon.
     Copyright (c) 2012, Patrick Goebel.
     All rights reserved.
 
@@ -57,7 +58,9 @@
    /* The Pololu MC33926 dual motor driver shield */
    //#define POLOLU_MC33926
 
-   /* The RoboGaia encoder shield */
+   /* The RoboGaia Mega Encoder shield
+    * Conventually used with Arduino Mega + Pololu motor controller shield
+    */
    //#define ROBOGAIA
    
    /* Encoders directly attached to Arduino board */
@@ -69,7 +72,7 @@
    /* Parallax HB-25 motor and encoders attached to  
     * Arduino board, preferably via a Sensor Shield v5.0
     */
-   #define PARALLAX_HB25
+   //#define PARALLAX_HB25
 
 #endif
 

@@ -110,14 +110,31 @@ When you log back in again, try the command:
 
 and you should see a list of groups you belong to including dialout. 
 
-Installation of the ros2\_arduino\_bridge stack
+Installation of the ros\_arduino\_bridge stack
 ----------------------------------------------
 
     $ mkdir -p ~/dev_ws/src
     $ cd ~/dev_ws/src
     $ git clone https://github.com/benbongalon/ros_arduino_bridge.git
-    $ 
-    $ catkin_make
+ 
+    $ colcon build --symlink-install
+
+You should see an output similar to below: 
+
+<pre>
+Starting >>> ros_arduino_msgs
+Starting >>> ros_arduino_firmware
+Finished <<< ros_arduino_firmware [0.11s]                                
+Finished <<< ros_arduino_msgs [0.54s]                     
+Starting >>> ros_arduino_python
+Finished <<< ros_arduino_python [0.70s]          
+
+Summary: 3 packages finished [1.35s]
+</pre>
+
+Run the _setup.bash_ file to make the ros_arduino_bridge packages visible from ROS.
+
+    $ source install/setup.bash
 
 The provided Arduino library is called ROSArduinoBridge and is
 located in the ros\_arduino\_firmware package.  This sketch is
@@ -132,7 +149,7 @@ To install the ROSArduinoBridge library, follow these steps:
 
 where SKETCHBOOK_PATH is the path to your Arduino sketchbook directory.
 
-    $ cp -rp `rospack find ros_arduino_firmware`/src/libraries/ROSArduinoBridge ROSArduinoBridge
+    $ cp -pr ~/dev_ws/src/ros_arduino_bridge/ros_arduino_firmware/src/libraries/ROSArduinoBridge ROSArduinoBridge
 
 This last command copies the ROSArduinoBridge sketch files into your sketchbook folder.  The next section describes how to configure, compile and upload this sketch.
 
@@ -239,7 +256,7 @@ dimensions, PID parameters, and sensor configuration by editing the
 YAML file in the directory ros\_arduino\_python/config.  So first move
 into that directory:
 
-    $ roscd ros_arduino_python/config
+    $ cd ~/dev_ws/src/ros_arduino_bridge/ros_arduino_python/config
 
 Now copy the provided config file to one you can modify:
 
@@ -248,7 +265,7 @@ Now copy the provided config file to one you can modify:
 Bring up your copy of the params file (my\_arduino\_params.yaml) in
 your favorite text editor.  It should start off looking like this:
 
-<pre>
+```python
 port: /dev/ttyUSB0
 baud: 57600
 timeout: 0.1
@@ -290,7 +307,7 @@ sensors: {
   #sonar_front_center:   {pin: 5, type: Ping, rate: 10},
   arduino_led:          {pin: 13, type: Digital, rate: 5, direction: output}
 }
-</pre>
+```
 
 **NOTE**: Do not use tabs in your .yaml file or the parser will barf it back out when it tries to load it.   Always use spaces instead.  **ALSO**: When defining your sensor parameters, the last sensor in the list does **not** get a comma (,) at the end of the line but all the rest **must** have a comma.
 
@@ -359,10 +376,12 @@ file something different, change the name in the launch file.
 With your Arduino connected and running the MegaRobogaiaPololu sketch,
 launch the ros\_arduino\_python node with your parameters:
 
-    $ roslaunch ros_arduino_python arduino.launch
+    $ ros2 launch ros_arduino_python arduino_launch.py
 
 You should see something like the following output:
 
+<details>
+  <summary>Polulu motor</summary>
 <pre>
 process[arduino-1]: started with pid [6098]
 Connecting to Arduino on port /dev/ttyUSB0 ...
@@ -373,6 +392,15 @@ Arduino is ready.
 [INFO]
 etc
 </pre>
+</details>
+
+<details>
+  <summary>HB-25 motor</summary>
+<pre>
+@todo: add example output
+</pre>
+</details>
+
 
 If you have any Ping sonar sensors on your robot and you defined them
 in your config file, they should start flashing to indicate you have
@@ -382,16 +410,16 @@ Viewing Sensor Data
 -------------------
 To see the aggregated sensor data, echo the sensor state topic:
 
-    $ rostopic echo /arduino/sensor_state
+    $ ros2 topic echo /arduino/sensor_state
 
 To see the data on any particular sensor, echo its topic name:
 
-    $ rostopic echo /arduino/sensor/sensor_name
+    $ ros2 topic echo /arduino/sensor/sensor_name
 
 For example, if you have a sensor called ir\_front\_center, you can see
 its data using:
 
-    $ rostopic echo /arduino/sensor/ir_front_center
+    $ ros2 topic echo /arduino/sensor/ir_front_center
 
 You can also graph the range data using rxplot:
 
@@ -403,7 +431,7 @@ Sending Twist Commands and Viewing Odometry Data
 
 Place your robot on blocks, then try publishing a Twist command:
 
-    $ rostopic pub -1 /cmd_vel geometry_msgs/Twist '{ angular: {z: 0.5} }'
+    $ ros2 topic pub -1 /cmd_vel geometry_msgs/Twist '{ angular: {z: 0.5} }'
 
 The wheels should turn in a direction consistent with a
 counter-clockwise rotation (right wheel forward, left wheel backward).
@@ -413,11 +441,11 @@ then kill and restart the arduino.launch file.
 
 Stop the robot with the command:
 
-    $ rostopic pub -1 /cmd_vel geometry_msgs/Twist '{}'
+    $ ros2 topic pub -1 /cmd_vel geometry_msgs/Twist '{}'
 
 To view odometry data:
 
-    $ rostopic echo /odom
+    $ ros2 topic echo /odom
 
 or
 
@@ -429,30 +457,30 @@ The ros\_arduino\_python package also defines a few ROS services as follows:
 
 **digital\_set\_direction** - set the direction of a digital pin
 
-    $ rosservice call /arduino/digital_set_direction pin direction
+    $ ros2 service call /arduino/digital_set_direction pin direction
 
 where pin is the pin number and direction is 0 for input and 1 for output.
 
 **digital\_write** - send a LOW (0) or HIGH (1) signal to a digital pin
 
-    $ rosservice call /arduino/digital_write pin value
+    $ ros2 service call /arduino/digital_write pin value
 
 where pin is the pin number and value is 0 for LOW and 1 for HIGH.
 
 **servo\_write** - set the position of a servo
 
-    $ rosservice call /arduino/servo_write id pos
+    $ ros2 service call /arduino/servo_write id pos
 
 where id is the index of the servo as defined in the Arduino sketch (servos.h) and pos is the position in radians (0 - 3.14).
 
 **servo\_read** - read the position of a servo
 
-    $ rosservice call /arduino/servo_read id
+    $ ros2 service call /arduino/servo_read id
 
 where id is the index of the servo as defined in the Arduino sketch (servos.h)
 
-Using the on-board wheel encoder counters (Arduino Uno only)
-------------------------------------------------------------
+Using the on-board wheel encoder counters for the Arduino Uno
+-------------------------------------------------------------
 The firmware supports on-board wheel encoder counters for Arduino Uno.
 This allows connecting wheel encoders directly to the Arduino board, without the need for any additional wheel encoder counter equipment (such as a RoboGaia encoder shield).
 
@@ -466,14 +494,34 @@ To use the on-board wheel encoder counters, connect your wheel encoders to Ardui
     Right wheel encoder A output -- Arduino UNO pin A4
     Right wheel encoder B output -- Arduino UNO pin A5
 
-Make the following changes in the ROSArduinoBridge sketch to disable the RoboGaia encoder shield, and enable the on-board one:
+Make the following changes in the ROSArduinoBridge sketch:
 
-    /* The RoboGaia encoder shield */
-    //#define ROBOGAIA
     /* Encoders directly attached to Arduino board */
     #define ARDUINO_ENC_COUNTER
 
-Compile the changes and upload to your controller.
+Compile the changes and upload the firmware.
+
+Using the Parallax HB-25 Motor Controller and Quadrature Encoder
+----------------------------------------------------------------
+The driver for the HB-25 motor controller and quadrature encoder is
+emp
+
+
+For speed, the code is directly addressing specific Atmega328p ports and interrupts, making this implementation Atmega328p (Arduino Uno) dependent. (It should be easy to adapt for other boards/AVR chips though.)
+
+Connect your motor controller and wheel encoders to Arduino Uno as follows:
+
+    Left wheel encoder A output -- Arduino UNO pin 11
+    Left wheel encoder B output -- Arduino UNO pin 10
+
+    Right wheel encoder A output -- Arduino UNO pin 13
+    Right wheel encoder B output -- Arduino UNO pin 12
+
+Make the following changes in the ROSArduinoBridge sketch:
+
+    #define PARALLAX_HB25
+
+Compile the changes and upload the firmware.
 
 Using L298 Motor driver
 -----------------------
@@ -507,13 +555,9 @@ so that it looks like this:
 //#define USE_BASE
 </pre>
 
-**NOTE:** If you are using a version of the Arduino IDE previous to 1.6.6, you also need to comment out the line that looks like this in the file encoder_driver.ino:
-
-    #include "MegaEncoderCounter.h"
-
-so it looks like this:
-
-    //#include "MegaEncoderCounter.h"
+Edit the readEncoder() and setMotorSpeed() 
+    wrapper functions if using different motor controller or encoder 
+    method
 
 Compile the changes and upload to your controller.
 
