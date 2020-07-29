@@ -381,7 +381,7 @@ launch the ros\_arduino\_python node with your parameters:
 You should see something like the following output:
 
 <details>
-  <summary>Polulu motor</summary>
+  <summary>Pololu motor</summary>
 <pre>
 process[arduino-1]: started with pid [6098]
 Connecting to Arduino on port /dev/ttyUSB0 ...
@@ -479,8 +479,31 @@ where id is the index of the servo as defined in the Arduino sketch (servos.h) a
 
 where id is the index of the servo as defined in the Arduino sketch (servos.h)
 
-Using the on-board wheel encoder counters for the Arduino Uno
--------------------------------------------------------------
+Using the Parallax HB-25 Motor Controller and Quadrature Encoder
+----------------------------------------------------------------
+The firmware supports the Parallax HB-25 motor controller and quadrature encoder. Attach an (optional) Arduino Sensor Shield to the Arduino Uno board to make the wiring connections easier.
+
+For speed, the code is directly addressing specific Atmega328p ports and interrupts, making this implementation Atmega328p (Arduino Uno) dependent. (It should be easy to adapt for other boards/AVR chips though.)
+
+Connect your motor controller and wheel encoders to Arduino Uno or shield as follows:
+
+    Left wheel PWM control -- Arduino UNO Pin 8
+    Right wheel PWM control -- Arduino UNO Pin 9
+
+    Left wheel encoder A output -- Arduino UNO pin 11
+    Left wheel encoder B output -- Arduino UNO pin 10
+
+    Right wheel encoder A output -- Arduino UNO pin 13
+    Right wheel encoder B output -- Arduino UNO pin 12
+
+Make the following changes in the ROSArduinoBridge sketch:
+
+    #define PARALLAX_HB25
+
+Compile the changes and upload the firmware.
+
+Using the on-board wheel encoder counters (Arduino Uno only)
+------------------------------------------------------------
 The firmware supports on-board wheel encoder counters for Arduino Uno.
 This allows connecting wheel encoders directly to the Arduino board, without the need for any additional wheel encoder counter equipment (such as a RoboGaia encoder shield).
 
@@ -498,28 +521,6 @@ Make the following changes in the ROSArduinoBridge sketch:
 
     /* Encoders directly attached to Arduino board */
     #define ARDUINO_ENC_COUNTER
-
-Compile the changes and upload the firmware.
-
-Using the Parallax HB-25 Motor Controller and Quadrature Encoder
-----------------------------------------------------------------
-The driver for the HB-25 motor controller and quadrature encoder is
-emp
-
-
-For speed, the code is directly addressing specific Atmega328p ports and interrupts, making this implementation Atmega328p (Arduino Uno) dependent. (It should be easy to adapt for other boards/AVR chips though.)
-
-Connect your motor controller and wheel encoders to Arduino Uno as follows:
-
-    Left wheel encoder A output -- Arduino UNO pin 11
-    Left wheel encoder B output -- Arduino UNO pin 10
-
-    Right wheel encoder A output -- Arduino UNO pin 13
-    Right wheel encoder B output -- Arduino UNO pin 12
-
-Make the following changes in the ROSArduinoBridge sketch:
-
-    #define PARALLAX_HB25
 
 Compile the changes and upload the firmware.
 
