@@ -38,20 +38,19 @@ class Arduino:
     N_ANALOG_PORTS = 6
     N_DIGITAL_PORTS = 12
 
-    def __init__(self, port="/dev/ttyUSB0", baudrate=57600, timeout=0.5, motors_reversed=False):
+    def __init__(self, portname="/dev/ttyACM0", baudrate=115200, timeout=0.5, motors_reversed=False):
 
         self.PID_RATE = 30 # default update rate; modified when connect() is called
-        self.PID_INTERVAL = 1000 / 30
+        self.PID_INTERVAL = 1000 / self.PID_RATE
 
-        self.port = port
+        self.port = None
+        self.portname = portname
         self.baudrate = baudrate
         self.timeout = timeout
         self.encoder_count = 0
         self.writeTimeout = timeout
         self.interCharTimeout = timeout / 30.
         self.motors_reversed = motors_reversed
-        # Keep things thread safe
-        #self.mutex = _thread.allocate_lock()
 
         # An array to cache analog sensor readings
         self.analog_sensor_cache = [None] * self.N_ANALOG_PORTS
@@ -59,12 +58,12 @@ class Arduino:
         # An array to cache digital sensor readings
         self.digital_sensor_cache = [None] * self.N_DIGITAL_PORTS
 
-        #self.connect()
+        self.connect()
 
     def connect(self):
         try:
             print("Connecting to Arduino on port", self.port, "...")
-            self.port = Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout, writeTimeout=self.writeTimeout)
+            self.port = Serial(port=self.portname, baudrate=self.baudrate, timeout=self.timeout, writeTimeout=self.writeTimeout)
         except SerialException:
             print("Serial Exception:")
             print(sys.exc_info())
@@ -122,7 +121,7 @@ class Arduino:
 
         # @TODO: implement user-defined timeout
 
-        value = self.port.read(100).decode()
+        value = self.port.read_until(terminator='\n', size=100).decode()
         return value.strip()
 
     def recv_ack(self):
@@ -153,96 +152,46 @@ class Arduino:
             return []
 
     def execute(self, cmd):
-        ''' Thread safe execution of "cmd" on the Arduino returning a single integer value.
+        ''' Execute the user command and return a single integer value.
         '''
-        #self.mutex.acquire()
-
         try:
             self.port.flushInput()
         except:
             pass
-
-        ntries = 1
-        attempts = 0
-
         self.send(cmd)
         value = self.recv_int()
-        #while attempts < ntries and (value == '' or value == 'Invalid Command' or value == None):
-        #    try:
-        #        self.port.flushInput()
-        #        self.send(cmd)
-        #        value = self.recv(self.timeout)
-        #    except:
-        #        print("Exception executing command: " + cmd)
-        #    attempts += 1
-
-        #self.mutex.release()
         return value
 
     def execute_array(self, cmd):
-        ''' Thread safe execution of "cmd" on the Arduino returning an array.
+        ''' Execute the user command and return an array.
         '''
-        #self.mutex.acquire()
-
         try:
             self.port.flushInput()
         except:
             pass
-
-        ntries = 1
-        attempts = 0
-
         try:
             self.send(cmd)
             values = self.recv_array()
-            #while attempts < ntries and (values == '' or values == 'Invalid Command' or values == [] or values == None):
-            #    try:
-            #        self.port.flushInput()
-            #        self.send(cmd)
-            #        values = self.recv_array()
-            #    except:
-            #        print("Exception executing command: " + cmd)
-            #    attempts += 1
         except:
-            #self.mutex.release()
             print("Exception executing command: " + cmd)
             raise SerialException
             return []
-
-        #self.mutex.release()
         return values
 
     def execute_ack(self, cmd):
-        ''' Thread safe execution of "cmd" on the Arduino returning True if response is ACK.
+        ''' Execute the user command and return True if response is ACK.
         '''
-        #self.mutex.acquire()
-
         try:
             self.port.flushInput()
         except:
             pass
-
-        ntries = 1
-        attempts = 0
-
         try:
             self.send(cmd)
             ack = self.recv(self.timeout)
-            #while attempts < ntries and (ack == '' or ack == 'Invalid Command' or ack == None):
-            #    try:
-            #        self.port.flushInput()
-            #        self.send(cmd)
-            #        ack = self.recv(self.timeout)
-            #    except:
-            #        print("Exception executing command: " + cmd)
-            #attempts += 1
         except:
-            #self.mutex.release()
             print("execute_ack exception when executing", cmd)
             print(sys.exc_info())
             return 0
-
-        #self.mutex.release()
         return ack == 'OK'
 
     def update_pid(self, Kp, Kd, Ki, Ko):
@@ -252,7 +201,7 @@ class Arduino:
         cmd = 'u ' + str(Kp) + ':' + str(Kd) + ':' + str(Ki) + ':' + str(Ko)
         self.execute_ack(cmd)
 
-    def get_pid_rate(self):
+    def get_pid_params(self):
         ''' Get the current PID parameters.
         '''
         return self.execute_array('v')
@@ -354,13 +303,13 @@ class Arduino:
 
 def main():
     if os.name == "posix":
-        portName = "/dev/ttyACM0"
+        portname = "/dev/ttyACM0"
     else:
-        portName = "COM43" # Windows style COM port.
+        portname = "COM43" # Windows style COM port.
 
-    baudRate = 57600
+    baudRate = 115200
 
-    myArduino = Arduino(port=portName, baudrate=baudRate, timeout=0.5)
+    myArduino = Arduino(portname=portname, baudrate=baudRate, timeout=0.5)
     myArduino.connect()
 
     #print("Sleeping for 1 second...")

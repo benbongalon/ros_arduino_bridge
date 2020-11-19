@@ -1,44 +1,26 @@
 Overview
 --------
-This branch (foxy-devel) is intended for ROS 2 Foxy Fitzroy and above, and uses the Colcon buildsystem. It is not backwards compatible with ROS 1.
+This project is a partial port of the **ros_arduino_bridge** package to ROS 2. 
+It is "partial" because I only worked on and tested the Arduino controller, 
+since I don't have access to the other hardware, nor desire to maintain them. 
+However I kept their code intact in case someone wants to revive them.
 
-This ROS stack includes an Arduino library (called ROSArduinoBridge) and a collection of ROS packages for controlling an Arduino-based robot using standard ROS messages and services.  The stack does **not** depend on ROS Serial.
+Features of this new ROS 2 stack include:
 
-Features of the stack include:
+* Support for Arduino Uno (other Arduino boards may work but untested)
 
-* Direct support for Ping sonar and Sharp infrared (GP2D12) sensors
+* Support for the Parallax HB-25 motor controllers
 
-* Can also read data from generic analog and digital sensors
+* Default serial baud rate set to 115200
 
-* Can control digital outputs (e.g. turn a switch or LED on and off)
-
-* Support for PWM servos
-
-* Configurable base controller if using the required hardware
+* Uses Colcon as the build system
 
 The stack includes a base controller for a differential drive
 robot that accepts ROS Twist messages and publishes odometry data back to
-the PC. The base controller requires the use of a motor controller and encoders for reading odometry data.  The current version of the stack provides support for the following base controller hardware:
+the PC. The base controller requires the use of a motor controller and encoders for reading odometry data. 
 
-* Pololu VNH5019 dual motor controller shield (http://www.pololu.com/catalog/product/2502) or Pololu MC33926 dual motor shield (http://www.pololu.com/catalog/product/2503).
-
-* Robogaia Mega Encoder shield
-(http://www.robogaia.com/two-axis-encoder-counter-mega-shield-version-2.html) or on-board wheel encoder counters.
-
-    **NOTE:** The Robogaia Mega Encoder shield can only be used with an Arduino Mega. The on-board wheel encoder counters are currently only supported by Arduino Uno.
-
-* L298 motor driver
-
-* Parallax HB-25 motor driver
-
-The library can be easily extended to include support for other motor controllers and encoder hardware or libraries.
-
-Official ROS Documentation
---------------------------
-A standard ROS-style version of this documentation can be found on the ROS wiki at:
-
-http://www.ros.org/wiki/ros_arduino_bridge
-
+If you want to use the Pololu VNH5019, Robogaia or L298 motor drivers, see the 
+[ROS 1 ros_arduino_bridge](https://wiki.ros.org/ros_arduino_bridge) package.
 
 System Requirements
 -------------------
@@ -52,29 +34,6 @@ or
 
 **Arduino IDE 1.6.6 or Higher:**
 Note that the preprocessing of conditional #include statements is broken in earlier versions of the Arduino IDE.  To ensure that the ROS Arduino Bridge firmware compiles correctly, be sure to install version 1.6.6 or higher of the Arduino IDE.  You can download the IDE from https://www.arduino.cc/en/Main/Software.
-
-**Hardware:**
-The firmware should work with any Arduino-compatible controller for reading sensors and controlling PWM servos.  However, to use the base controller, you will need a supported motor controller and encoder hardware as described above. If you do not have this hardware, you can still try the package for reading sensors and controlling servos.  See the NOTES section at the end of this document for instructions on how to do this.
-
-To use the base controller you must also install the appropriate libraries for your motor controller and encoders.  For the Pololu VNH5019 Dual Motor Shield, the library can be found at:
-
-https://github.com/pololu/Dual-VNH5019-Motor-Shield
-
-For the Pololu MC33926 Dual Motor Shield, the library can be found at:
-
-https://github.com/pololu/dual-mc33926-motor-shield
-
-The Robogaia Mega Encoder library can be found at:
-
-http://www.robogaia.com/uploads/6/8/0/9/6809982/__megaencodercounter-1.3.tar.gz
-
-**NOTE:** The L298 Motor Driver and the Parallax HB-25 Motor Driver do not require any libraries
-
-These libraries should be installed in your standard Arduino
-sketchbook/libraries directory.
-
-Finally, it is assumed you are using version 1.0 or greater of the
-Arduino IDE.
 
 Preparing your Serial Port under Linux
 --------------------------------------
@@ -381,20 +340,6 @@ launch the ros\_arduino\_python node with your parameters:
 You should see something like the following output:
 
 <details>
-  <summary>Pololu motor</summary>
-<pre>
-process[arduino-1]: started with pid [6098]
-Connecting to Arduino on port /dev/ttyUSB0 ...
-Connected at 57600
-Arduino is ready.
-[INFO] [WallTime: 1355498525.954491] Connected to Arduino on port /dev/ttyUSB0 at 57600 baud
-[INFO] [WallTime: 1355498525.966825] motor_current_right {'rate': 5, 'type': 'PololuMotorCurrent', 'pin': 1}
-[INFO]
-etc
-</pre>
-</details>
-
-<details>
   <summary>HB-25 motor</summary>
 <pre>
 @todo: add example output
@@ -523,19 +468,6 @@ Make the following changes in the ROSArduinoBridge sketch:
     #define ARDUINO_ENC_COUNTER
 
 Compile the changes and upload the firmware.
-
-Using L298 Motor driver
------------------------
-the wiring between the L298 motor driver and arduino board is defined in motor_driver.h in the firmware as follow:
-
-    #define RIGHT_MOTOR_BACKWARD 5
-    #define LEFT_MOTOR_BACKWARD  6
-    #define RIGHT_MOTOR_FORWARD  9
-    #define LEFT_MOTOR_FORWARD   10
-    #define RIGHT_MOTOR_ENABLE 12
-    #define LEFT_MOTOR_ENABLE 13
-
-wire them this way or change them if you want, and make sure that the L298 motor driver is defined then compile and upload the firmware.
 
 NOTES
 -----

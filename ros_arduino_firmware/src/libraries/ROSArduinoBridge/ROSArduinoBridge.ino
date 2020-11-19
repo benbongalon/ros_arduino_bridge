@@ -72,7 +72,7 @@
    /* Parallax HB-25 motor and encoders attached to  
     * Arduino board, preferably via a Sensor Shield v5.0
     */
-   //#define PARALLAX_HB25
+   #define PARALLAX_HB25
 
 #endif
 
@@ -80,11 +80,11 @@
 #undef USE_SERVOS     // Disable use of PWM servos
 
 /* Serial port baud rate */
-#define BAUDRATE     57600
+#define BAUDRATE     115200
 
 /* Maximum PWM signal */
 #ifdef PARALLAX_HB25
-#define MAX_PWM        500
+#define MAX_PWM        2000
 #else
 #define MAX_PWM        255
 #endif
@@ -230,7 +230,7 @@ int runCommand() {
     break;
   case MOTOR_SPEEDS:
     /* Reset the auto stop timer */
-    lastMotorCommand = millis();
+    lastMotorCommand = millis();  
     if (arg1 == 0 && arg2 == 0) {
       setMotorSpeeds(0, 0);
       resetPID();
@@ -240,7 +240,7 @@ int runCommand() {
     leftPID.TargetTicksPerFrame = arg1;
     rightPID.TargetTicksPerFrame = arg2;
     Serial.println("OK"); 
-    break;
+    break;  
   case UPDATE_PID:
     while ((str = strtok_r(p, ":", &p)) != '\0') {
        pid_args[i] = atoi(str);

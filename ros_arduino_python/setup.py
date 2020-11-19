@@ -13,7 +13,9 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         # Include all launch files
-        (os.path.join('share', package_name), glob('launch/*_launch.py'))
+        (os.path.join('share', package_name), glob('launch/*_launch.py')),
+        # Include all Nodes in library folder
+        (os.path.join('lib', package_name), glob('nodes/*.py'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
