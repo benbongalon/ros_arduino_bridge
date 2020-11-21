@@ -1,39 +1,50 @@
 Overview
 --------
 This project is a partial port of the **ros_arduino_bridge** package to ROS 2. 
-It is "partial" because I only worked on and tested the Arduino controller, 
-since I don't have access to the other hardware, nor desire to maintain them. 
-However I kept their code intact in case someone wants to revive them.
+Sections of the original code that implemented support for multiple types of 
+motor controllers and sensors were retained; however they have not tested 
+(use at your own risk).
+
+The stack includes a base controller for a differential drive robot that 
+accepts ROS Twist messages and publishes odometry data back to the PC. The 
+base controller communicates to an Arduino board through a serial interface 
+to drive a motor controller and read odometry data from wheel encoders.
+
+The primary goal of this project is to develop a differential drive robot 
+based on the [Parallax Arlo Robotic Platform](https://www.parallax.com/product/arlo-complete-robot-system/) 
+and that runs on ROS 2. Having said that, some effort has made to keep the 
+code modular and allow for adding support for new hardware.
 
 Features of this new ROS 2 stack include:
 
-* Support for Arduino Uno (other Arduino boards may work but untested)
+* Support for Arduino Uno; other Arduino boards may work but untested
 
-* Support for the Parallax HB-25 motor controllers
+* Support for the Parallax HB-25 motor controllers (used in Arlo platform)
 
 * Default serial baud rate set to 115200
 
 * Uses Colcon as the build system
 
-The stack includes a base controller for a differential drive
-robot that accepts ROS Twist messages and publishes odometry data back to
-the PC. The base controller requires the use of a motor controller and encoders for reading odometry data. 
-
-If you want to use the Pololu VNH5019, Robogaia or L298 motor drivers, see the 
-[ROS 1 ros_arduino_bridge](https://wiki.ros.org/ros_arduino_bridge) package.
+See the original [ROS 1 ros_arduino_bridge](https://wiki.ros.org/ros_arduino_bridge) 
+package if you want to back-port these motor controllers: Pololu VNH5019, 
+Robogaia, L298 motor driver.
 
 System Requirements
 -------------------
-Use either:
+1. Python 3 (tested on 3.8)
+2. PySerial module. Use either:
 
+    ```
     $ sudo pip install --upgrade pyserial
 
-or
+    or
 
     $ sudo easy_install -U pyserial
+    ```
 
-**Arduino IDE 1.6.6 or Higher:**
-Note that the preprocessing of conditional #include statements is broken in earlier versions of the Arduino IDE.  To ensure that the ROS Arduino Bridge firmware compiles correctly, be sure to install version 1.6.6 or higher of the Arduino IDE.  You can download the IDE from https://www.arduino.cc/en/Main/Software.
+3. ROS 2 Foxy Fitzroy or later
+
+4. Arduino IDE 1.6.6 or later. Download from https://www.arduino.cc/en/Main/Software
 
 Preparing your Serial Port under Linux
 --------------------------------------
@@ -91,16 +102,15 @@ Finished <<< ros_arduino_python [0.70s]
 Summary: 3 packages finished [1.35s]
 </pre>
 
-Run the _setup.bash_ file to make the ros_arduino_bridge packages visible from ROS.
+Run the _setup.bash_ file to make the ros_arduino_bridge package visible from ROS.
 
     $ source install/setup.bash
 
 The provided Arduino library is called ROSArduinoBridge and is
 located in the ros\_arduino\_firmware package.  This sketch is
 specific to the hardware requirements above but it can also be used
-with other Arduino-type boards (e.g. Uno) by turning off the base
-controller as described in the NOTES section at the end of this
-document.
+with other Arduino-type boards by turning off the base controller as 
+described in the NOTES section at the end of this document.
 
 To install the ROSArduinoBridge library, follow these steps:
 
@@ -276,7 +286,7 @@ Let's now look at each section of this file.
 
 The port will likely be either /dev/ttyACM0 or /dev/ttyUSB0. Set accordingly.
 
-The MegaRobogaiaPololu Arudino sketch connects at 57600 baud by default.
+The Arduino sketch connects at 115200 baud by default.
 
 _Polling Rates_
 
@@ -342,11 +352,13 @@ You should see something like the following output:
 <details>
   <summary>HB-25 motor</summary>
 <pre>
-@todo: add example output
+[INFO] [launch]: All log files can be found below /home/ubuntu/.ros/log/2020-11-18-18-29-58-769592-nuc-382619
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [arduino_node.py-1]: process started with pid [382621]
+[arduino_node.py-1] [INFO] [1605753004.756857299] [ubuntu_arduino]: Connected to Arduino on port /dev/ttyACM0 at 115200 baud
 </pre>
 </details>
-
-
+ 
 If you have any Ping sonar sensors on your robot and you defined them
 in your config file, they should start flashing to indicate you have
 made the connection.
@@ -383,6 +395,13 @@ counter-clockwise rotation (right wheel forward, left wheel backward).
 If they turn in the opposite direction, set the motors_reversed
 parameter in your config file to the opposite of its current setting,
 then kill and restart the arduino.launch file.
+
+**NOTE:** If your robot is heavy and reacts slowly, you may need to publish 
+the command multiple times. To do so, run:
+
+    $ ros2 topic pub /cmd_vel geometry_msgs/Twist '{ angular: {z: 0.5} }'
+
+then hit Ctrl-C to stop sending.
 
 Stop the robot with the command:
 
